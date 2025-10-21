@@ -73,13 +73,32 @@ def get_current_user_playlist(token, name):
         if playlist["name"] == name:
             return playlist["id"]
         
-def get_playlist_items(token, playlist_id):
+def get_playlist_items(token, playlist_id, offset):
     headers = get_auth_header(token)
     url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
-    query = {"fields": "items(track(name, id))"}
+    query = {
+        "fields" : "items(track(name, id))",
+        "limit" : "40",
+        "offset" : offset 
+        }
 
     result = get(url, headers=headers, params=query)
     print(result.status_code)
-    print (result.content)
+    json_result = result.json()
+    items = json_result["items"]
+    #print(items)
+    track_ids = [track["track"]["id"] for track in items]
+    return track_ids
 
+    # track_name = track["name"]
+    # track_id = track["id"]
+    # return track_name, track_id
 
+def get_playlist_length(token, playlist_id):
+    url = f"https://api.spotify.com/v1/playlists/{playlist_id}/tracks"
+    headers = get_auth_header(token)
+    query = {"fields": "total"}
+
+    result = get(url, headers=headers, params=query)
+    json_result = result.json()
+    return json_result["total"]
